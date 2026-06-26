@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { ArrowLeft, Check, Loader2, X } from "lucide-react";
+import { ArrowLeft, Check, Loader2, Trash2, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -57,6 +57,16 @@ export default function ProjectDetail({ projectPath, onBack }: ProjectDetailProp
       .catch(console.error);
   };
 
+  const handleRemove = () => {
+    if (
+      !window.confirm(
+        `Stop tracking "${project?.name}"? This only removes it from Portier — your files are untouched.`
+      )
+    )
+      return;
+    invoke("remove_project", { path_str: projectPath }).then(onBack).catch(console.error);
+  };
+
   const back = (
     <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2 gap-2">
       <ArrowLeft className="h-4 w-4" />
@@ -88,7 +98,18 @@ export default function ProjectDetail({ projectPath, onBack }: ProjectDetailProp
 
   return (
     <div className="animate-fade-in space-y-6">
-      {back}
+      <div className="flex items-center justify-between">
+        {back}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-2 text-destructive hover:text-destructive"
+          onClick={handleRemove}
+        >
+          <Trash2 className="h-4 w-4" />
+          Remove
+        </Button>
+      </div>
 
       <Card>
         <CardHeader className="pb-3">

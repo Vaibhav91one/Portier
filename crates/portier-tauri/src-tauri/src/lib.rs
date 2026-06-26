@@ -35,6 +35,8 @@ fn get_projects() -> Result<Vec<ProjectSummary>, String> {
     Ok(reg
         .projects
         .into_iter()
+        // Hide projects whose directory no longer exists (stale entries).
+        .filter(|(path, _)| std::path::Path::new(path).exists())
         .map(|(path, entry)| {
             let mut services: Vec<ServiceInfo> = entry
                 .services
@@ -107,6 +109,15 @@ fn add_project(path_str: String) -> Result<ProjectSummary, String> {
 }
 
 #[tauri::command]
+fn remove_project(path_str: String) -> Result<(), String> {
+    Registry::update(|reg| {
+        reg.remove_project(&path_str);
+        Ok(())
+    })
+    .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn get_project_detail(path_str: String) -> Result<Option<ProjectEntry>, String> {
     let reg = Registry::load().map_err(|e| e.to_string())?;
     Ok(reg.get_project(&path_str).cloned())
@@ -172,6 +183,7 @@ pub fn run() {
             get_projects,
             assign_port,
             add_project,
+            remove_project,
             get_project_detail,
             get_port_project_map
         ])
