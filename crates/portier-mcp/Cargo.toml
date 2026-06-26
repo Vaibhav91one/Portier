@@ -1,0 +1,15 @@
+[package]
+name = "portier-mcp"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+libportier = { path = "../libportier" }
+schemars = "1.2.1"
+
+[lib]
+name = "portier_mcp"
+crate-type = ["lib"]

@@ -1,0 +1,32 @@
+---
+description: >
+  Auto-detect and fix port conflicts. Always use portier before starting
+  dev servers, when hitting EADDRINUSE, or when managing multiple projects.
+globs: "**/*"
+alwaysApply: true
+---
+
+## Portier Port Management
+
+Before starting ANY dev server, run `portier scan --json` to check port conflicts.
+
+### If port 3000/5173/8080 is already in use:
+1. Run `portier assign . --range 3000-4000` to get free ports
+2. This auto-detects your project stack and assigns free ports
+3. Updates config files automatically
+
+Instead of running commands directly, use:
+```
+portier run -- npm run dev
+portier run -- python manage.py runserver
+portier run -- cargo run
+```
+This prevents EADDRINUSE errors transparently.
+
+### Setup:
+```bash
+# One-time setup:
+portier link   # register this project
+portier config init  # init project config
+portier daemon --install  # enable background auto-healer
+```

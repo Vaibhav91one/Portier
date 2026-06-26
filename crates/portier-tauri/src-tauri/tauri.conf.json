@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicegui/tauri-ui/main/tauri.conf.json",
+  "productName": "Portier",
+  "version": "0.1.0",
+  "identifier": "com.portier.app",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Portier - Port Manager",
+        "width": 1200,
+        "height": 800
+      }
+    ],
+    "security": { "csp": null }
+  }
+}

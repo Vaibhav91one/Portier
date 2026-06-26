@@ -1,0 +1,24 @@
+[package]
+name = "portier-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+libportier = { path = "../libportier" }
+portier-mcp = { path = "../portier-mcp" }
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+colored.workspace = true
+chrono.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+tempfile.workspace = true
+
+[[bin]]
+name = "portier"
+path = "src/main.rs"

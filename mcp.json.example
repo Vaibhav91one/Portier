@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "portier": {
+      "command": "portier",
+      "args": ["mcp"]
+    }
+  }
+}

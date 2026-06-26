@@ -1,0 +1,12 @@
+{
+  "name": "@portier/cli",
+  "version": "0.1.0",
+  "description": "Port conflict detection and resolution CLI tool",
+  "bin": {
+    "portier": "install.js"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "license": "MIT"
+}

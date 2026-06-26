@@ -1,0 +1,24 @@
+[workspace]
+resolver = "2"
+members = ["crates/libportier", "crates/portier-cli", "crates/portier-mcp", "crates/portier-tauri/src-tauri"]
+default-members = ["crates/libportier", "crates/portier-cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Port conflict detection and resolution CLI tool"
+
+[workspace.dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+thiserror = "2"
+anyhow = "1"
+colored = "3"
+tempfile = "3"
+chrono = { version = "0.4", features = ["serde"] }
+fs2 = "0.4"
+sysinfo = "0.33"     # For port/process detection cross-platform
+atty = "0.2"

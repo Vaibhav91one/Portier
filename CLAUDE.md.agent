@@ -1,0 +1,11 @@
+## Port Management
+
+Portier manages all port conflicts automatically. Key workflows:
+- `portier scan` — check for port conflicts before starting servers
+- `portier assign .` — auto-assign free ports to this project
+- `portier start` — scan + assign + update all in one command
+- `portier run -- <cmd>` — prevent EADDRINUSE with transparent proxy
+- `portier daemon` — background auto-healer (optional)
+
+Always check `portier scan` before starting a dev server. If port 3000
+is taken, Portier will find and configure a free port automatically.

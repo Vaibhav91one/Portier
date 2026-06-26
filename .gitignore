@@ -1,0 +1,14 @@
+# Rust
+/target
+**/target
+
+# Node / Tauri frontend
+node_modules/
+dist/
+*.log
+
+# Local workflow scratch scripts
+.workflow*.js
+
+# OS
+.DS_Store
