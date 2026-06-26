@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { CheckCircle2, FolderPlus } from "lucide-react";
+import { open } from "@tauri-apps/plugin-dialog";
+import { CheckCircle2, FolderPlus, FolderOpen } from "lucide-react";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -21,6 +22,15 @@ export default function Onboarding({ onDone }: OnboardingProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ProjectSummary | null>(null);
+
+  const handleBrowse = async () => {
+    const picked = await open({ directory: true, multiple: false, title: "Select project folder" });
+    if (typeof picked === "string") {
+      setPathInput(picked);
+      setError(null);
+      setResult(null);
+    }
+  };
 
   const handleLink = () => {
     if (!pathInput.trim()) return;
@@ -51,17 +61,28 @@ export default function Onboarding({ onDone }: OnboardingProps) {
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Project path</label>
-            <input
-              type="text"
-              autoFocus
-              placeholder="/Users/you/code/my-app"
-              value={pathInput}
-              onChange={(e) => setPathInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLink()}
-              className="w-full rounded-md border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                autoFocus
+                placeholder="/Users/you/code/my-app"
+                value={pathInput}
+                onChange={(e) => setPathInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLink()}
+                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBrowse}
+                className="shrink-0 gap-1.5"
+              >
+                <FolderOpen className="h-4 w-4" />
+                Browse
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground">
-              The absolute path to the project's root directory.
+              Pick a folder or paste the absolute path to the project root.
             </p>
           </div>
 
