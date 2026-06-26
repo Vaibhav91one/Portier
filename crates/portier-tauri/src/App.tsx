@@ -12,7 +12,7 @@ type View =
 
 export default function App() {
   const [view, setView] = useState<View>({ page: "dashboard" });
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);

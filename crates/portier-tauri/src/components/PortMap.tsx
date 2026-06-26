@@ -18,10 +18,10 @@ function kindOf(p: PortProjectMap): Kind {
 }
 
 const KIND_CLASS: Record<Kind, string> = {
-  conflict: "bg-destructive text-destructive-foreground border-transparent",
-  assigned: "bg-primary text-primary-foreground border-transparent",
-  process: "bg-muted text-muted-foreground border-transparent",
-  free: "bg-card text-muted-foreground border-border",
+  conflict: "bg-destructive text-destructive-foreground",
+  assigned: "bg-primary text-primary-foreground",
+  process: "bg-muted text-muted-foreground",
+  free: "bg-muted/40 text-muted-foreground",
 };
 
 const LEGEND: { kind: Kind; label: string }[] = [
@@ -36,7 +36,7 @@ export function PortMapLegend() {
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
       {LEGEND.map(({ kind, label }) => (
         <span key={kind} className="flex items-center gap-1.5">
-          <span className={`h-3 w-3 rounded-sm border ${KIND_CLASS[kind]}`} />
+          <span className={`h-3 w-3 rounded-sm ${KIND_CLASS[kind]}`} />
           {label}
         </span>
       ))}
@@ -57,7 +57,7 @@ function PortCell({ p }: { p: PortProjectMap }) {
   return (
     <div
       title={portTooltip(p)}
-      className={`flex aspect-square flex-col items-center justify-center rounded-md border p-1 text-center transition-transform hover:scale-105 ${KIND_CLASS[kindOf(p)]}`}
+      className={`flex aspect-square flex-col items-center justify-center rounded-md p-1 text-center transition-transform hover:scale-105 ${KIND_CLASS[kindOf(p)]}`}
     >
       <span className="tnum text-xs font-semibold leading-none">{p.port}</span>
       {p.project_name && (
@@ -111,7 +111,7 @@ export default function PortMap({
       {sorted.map(([key, group]) => {
         const conflicts = group.ports.filter((p) => p.is_conflict).length;
         return (
-          <div key={key} className="rounded-lg border bg-muted/20 p-4">
+          <div key={key} className="rounded-lg bg-muted/20 p-4">
             <div className="mb-3 flex items-center gap-2">
               {group.projectName && onProjectClick ? (
                 <button

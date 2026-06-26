@@ -137,7 +137,7 @@ export default function ProjectDetail({ projectPath, onBack }: ProjectDetailProp
                           value={editPort}
                           onChange={(e) => setEditPort(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && handleUpdate(name)}
-                          className="w-20 rounded-md border bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          className="w-20 rounded-md bg-muted px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                         />
                       ) : (
                         <span className="font-medium">{svc.assigned}</span>

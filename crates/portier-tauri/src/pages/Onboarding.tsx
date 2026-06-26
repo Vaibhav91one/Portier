@@ -69,7 +69,7 @@ export default function Onboarding({ onDone }: OnboardingProps) {
                 value={pathInput}
                 onChange={(e) => setPathInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLink()}
-                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="flex-1 rounded-md bg-muted px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
               <Button
                 type="button"
@@ -101,7 +101,7 @@ export default function Onboarding({ onDone }: OnboardingProps) {
           )}
 
           {result && (
-            <div className="space-y-3 rounded-md border bg-success/5 p-4">
+            <div className="space-y-3 rounded-md bg-success/10 p-4">
               <div className="flex items-center gap-2 text-success">
                 <CheckCircle2 className="h-5 w-5" />
                 <span className="font-medium text-foreground">Linked {result.name}</span>
