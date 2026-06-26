@@ -5,10 +5,9 @@ edition.workspace = true
 
 [dependencies]
 serde.workspace = true
-serde_json.workspace = true
-anyhow.workspace = true
 libportier = { path = "../libportier" }
-schemars = "1.2.1"
+rmcp = { version = "1.8.0", features = ["server", "macros", "transport-io"] }
+tokio = { version = "1.52.3", features = ["full"] }
 
 [lib]
 name = "portier_mcp"

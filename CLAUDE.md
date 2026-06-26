@@ -14,7 +14,7 @@ Rust workspace (`cargo`), four crates under `crates/`:
 |-------|------|
 | `libportier` | Core library — all logic lives here, reused by the others |
 | `portier-cli` | The `portier` binary (clap). Commands in `src/commands/` |
-| `portier-mcp` | MCP server (`portier mcp`) — JSON-RPC over stdio for Claude Code / Cursor |
+| `portier-mcp` | MCP server (`portier mcp`) — built on the official `rmcp` SDK (tokio, stdio). Tools defined with `#[tool_router]`/`#[tool]`; each returns `Json<T>` so its schema is advertised and the value lands in `structuredContent` |
 | `portier-tauri/src-tauri` | Tauri v2 desktop GUI (Rust backend + React/TS frontend in `../src`) |
 
 `default-members` = `libportier` + `portier-cli`, so plain `cargo build`/`cargo test` skips the Tauri app.
