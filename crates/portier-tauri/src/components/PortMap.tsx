@@ -4,6 +4,8 @@ interface PortMapProps {
   ports: PortProjectMap[];
   /** Show ports grouped by project instead of a single flat grid */
   groupByProject?: boolean;
+  /** Called when a project group header is clicked (registered projects only) */
+  onProjectClick?: (projectName: string) => void;
 }
 
 type Kind = "conflict" | "assigned" | "process" | "free";
@@ -77,7 +79,11 @@ function PortGrid({ ports }: { ports: PortProjectMap[] }) {
   );
 }
 
-export default function PortMap({ ports, groupByProject = false }: PortMapProps) {
+export default function PortMap({
+  ports,
+  groupByProject = false,
+  onProjectClick,
+}: PortMapProps) {
   if (ports.length === 0) return null;
 
   if (!groupByProject) {
@@ -102,17 +108,34 @@ export default function PortMap({ ports, groupByProject = false }: PortMapProps)
 
   return (
     <div className="space-y-4">
-      {sorted.map(([key, group]) => (
-        <div key={key}>
-          <div className="mb-2 flex items-center gap-2">
-            <h4 className="text-sm font-semibold">{group.projectName ?? "Unassigned"}</h4>
-            <span className="text-xs text-muted-foreground">
-              {group.ports.length} port{group.ports.length !== 1 ? "s" : ""}
-            </span>
+      {sorted.map(([key, group]) => {
+        const conflicts = group.ports.filter((p) => p.is_conflict).length;
+        return (
+          <div key={key} className="rounded-lg border bg-muted/20 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              {group.projectName && onProjectClick ? (
+                <button
+                  onClick={() => onProjectClick(group.projectName!)}
+                  className="text-sm font-semibold text-foreground hover:text-primary hover:underline"
+                >
+                  {group.projectName}
+                </button>
+              ) : (
+                <h4 className="text-sm font-semibold">{group.projectName ?? "Unassigned"}</h4>
+              )}
+              <span className="text-xs text-muted-foreground">
+                {group.ports.length} port{group.ports.length !== 1 ? "s" : ""}
+              </span>
+              {conflicts > 0 && (
+                <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
+                  {conflicts} conflict{conflicts !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+            <PortGrid ports={group.ports} />
           </div>
-          <PortGrid ports={group.ports} />
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
