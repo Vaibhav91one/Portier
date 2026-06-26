@@ -109,7 +109,17 @@ pub fn run(args: RunArgs) -> anyhow::Result<()> {
         println!("  Injected PORT={port} (use --no-inject to disable).");
     }
 
-    spawn(&args.command, Some(port), &project, &args.service)
+    // For arg-style servers (next -p, vite --port, django runserver), also
+    // rewrite the flag so it can't override the injected PORT.
+    let command = match libportier::inject::apply_port_to_args(&args.command, port) {
+        Some(rewritten) => {
+            println!("  Set the port flag on the command.");
+            rewritten
+        }
+        None => args.command.clone(),
+    };
+
+    spawn(&command, Some(port), &project, &args.service)
 }
 
 /// Spawn the command, optionally injecting the allocated port, and wait.
