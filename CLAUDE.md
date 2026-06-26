@@ -50,6 +50,7 @@ portier link                   # register the cwd project
 portier start [--yes]          # detect, allocate, rewrite configs, launch
 portier run -- <cmd>           # allocate a free port + inject PORT, then run <cmd>
 portier assign <name> [--dry-run]
+portier settings [--init|--show]  # global ~/.config/portier/config.toml
 portier status / stop / switch / rollback
 portier daemon [--install]     # background auto-healer (launchd/systemd)
 portier mcp                    # MCP server over stdio

@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "description": "Port conflict detection and resolution CLI tool",
   "bin": {
-    "portier": "install.js"
+    "portier": "bin/portier.js"
   },
   "scripts": {
     "postinstall": "node install.js"
   },
+  "files": [
+    "install.js",
+    "bin/portier.js"
+  ],
   "license": "MIT"
 }

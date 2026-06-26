@@ -55,6 +55,8 @@ enum Commands {
     Assign(commands::assign::AssignArgs),
     /// Create or edit a project's portier.json config
     Config(commands::config::ConfigArgs),
+    /// View or initialize global settings (~/.config/portier/config.toml)
+    Settings(commands::settings::SettingsArgs),
     /// Stop a project's running services
     Stop(commands::stop::StopArgs),
     /// Stop one project and start another
@@ -76,6 +78,7 @@ fn main() -> anyhow::Result<()> {
         Commands::Status(args) => commands::status::run(args),
         Commands::Assign(args) => commands::assign::run(args),
         Commands::Config(args) => commands::config::run(args),
+        Commands::Settings(args) => commands::settings::run(args),
         Commands::Link(args) => commands::link::run(args),
         Commands::Start(args) => commands::start::run(args),
         Commands::Stop(args) => commands::stop::run(args),

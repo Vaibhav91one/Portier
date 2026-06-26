@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "description": "Never fight a port conflict again — detects conflicts and rewrites config files.",
+  "homepage": "https://github.com/vaibhavtomar/portier",
+  "license": "MIT",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/vaibhavtomar/portier/releases/download/v0.1.0/portier-x86_64-pc-windows-msvc.zip",
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bin": "portier.exe"
+    }
+  },
+  "checkver": "github",
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/vaibhavtomar/portier/releases/download/v$version/portier-x86_64-pc-windows-msvc.zip"
+      }
+    }
+  }
+}

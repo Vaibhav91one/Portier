@@ -7,6 +7,7 @@ pub mod mcp;
 pub mod rollback;
 pub mod run;
 pub mod scan;
+pub mod settings;
 pub mod start;
 pub mod status;
 pub mod stop;

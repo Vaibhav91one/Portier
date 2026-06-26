@@ -18,6 +18,23 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+/// Annotated default settings file, written by `portier settings --init`.
+pub const EXAMPLE_TOML: &str = "\
+# Portier global settings.
+# Applies to: portier assign / start / switch / run.
+
+[ranges]
+# Free-port search window.
+start = 3000
+end = 7000
+
+[preferences]
+# Pack a project's services onto consecutive ports when possible.
+prefer_consecutive = false
+# Never allocate a well-known port (< 1024).
+avoid_well_known = true
+";
+
 fn default_start() -> u16 {
     3000
 }
