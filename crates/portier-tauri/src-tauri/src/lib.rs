@@ -1,4 +1,4 @@
-use libportier::{PortStatus, ProjectEntry, Registry, ServiceEntry};
+use libportier::{ProjectEntry, Registry, ServiceEntry};
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -18,11 +18,6 @@ pub struct PortProjectMap {
     pub is_conflict: bool,
     pub project_name: Option<String>,
     pub service_name: Option<String>,
-}
-
-#[tauri::command]
-fn scan_ports() -> Result<Vec<PortStatus>, String> {
-    libportier::scanner::scan().map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -88,15 +83,6 @@ fn add_project(path_str: String) -> Result<ProjectSummary, String> {
 }
 
 #[tauri::command]
-fn remove_project(path_str: String) -> Result<(), String> {
-    Registry::update(|reg| {
-        reg.remove_project(&path_str);
-        Ok(())
-    })
-    .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
 fn get_project_detail(path_str: String) -> Result<Option<ProjectEntry>, String> {
     let reg = Registry::load().map_err(|e| e.to_string())?;
     Ok(reg.get_project(&path_str).cloned())
@@ -159,11 +145,9 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
-            scan_ports,
             get_projects,
             assign_port,
             add_project,
-            remove_project,
             get_project_detail,
             get_port_project_map
         ])

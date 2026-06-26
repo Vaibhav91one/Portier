@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { AlertTriangle, FolderGit2, Loader2, Network, Plus, RefreshCw } from "lucide-react";
+import { AlertTriangle, FolderGit2, Loader2, Network, RefreshCw } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import PortMap, { PortMapLegend } from "../components/PortMap";
@@ -8,7 +8,6 @@ import type { PortProjectMap, ProjectSummary } from "../types";
 
 interface DashboardProps {
   onSelectProject: (path: string) => void;
-  onAddProject: () => void;
 }
 
 function StatCard({
@@ -47,7 +46,7 @@ function StatCard({
   );
 }
 
-export default function Dashboard({ onSelectProject, onAddProject }: DashboardProps) {
+export default function Dashboard({ onSelectProject }: DashboardProps) {
   const [ports, setPorts] = useState<PortProjectMap[]>([]);
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,16 +108,10 @@ export default function Dashboard({ onSelectProject, onAddProject }: DashboardPr
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={load} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Rescan
-          </Button>
-          <Button size="sm" className="gap-1.5" onClick={onAddProject}>
-            <Plus className="h-4 w-4" />
-            Add Project
-          </Button>
-        </div>
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={load} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          Rescan
+        </Button>
       </div>
 
       <div className="grid grid-cols-3 gap-5">

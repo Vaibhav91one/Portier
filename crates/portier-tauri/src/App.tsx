@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Moon, Plug, Plus, Sun } from "lucide-react";
+import { Moon, Plug, Plus, Sun } from "lucide-react";
 import Dashboard from "./pages/Dashboard";
 import ProjectDetail from "./pages/ProjectDetail";
 import Onboarding from "./pages/Onboarding";
@@ -40,15 +40,6 @@ export default function App() {
 
           <nav className="flex items-center gap-1">
             <Button
-              variant={view.page === "dashboard" ? "secondary" : "ghost"}
-              size="sm"
-              className="gap-1.5"
-              onClick={goDashboard}
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </Button>
-            <Button
               variant={view.page === "onboarding" ? "secondary" : "ghost"}
               size="sm"
               className="gap-1.5"
@@ -71,10 +62,7 @@ export default function App() {
 
       <main className="px-8 py-8">
         {view.page === "dashboard" && (
-          <Dashboard
-            onSelectProject={(p) => setView({ page: "project", projectPath: p })}
-            onAddProject={goOnboarding}
-          />
+          <Dashboard onSelectProject={(p) => setView({ page: "project", projectPath: p })} />
         )}
         {view.page === "project" && (
           <ProjectDetail projectPath={view.projectPath} onBack={goDashboard} />
