@@ -8,4 +8,7 @@ export interface ProjectEntry {
   name: string; stack: string; services: Record<string, ServiceEntry>;
   linked: boolean; worktree: string | null;
 }
-export interface ProjectSummary { name: string; stack: string; path: string; services_count: number; }
+export interface ServiceInfo { name: string; preferred: number; assigned: number; pid: number | null; }
+export interface ProjectSummary {
+  name: string; stack: string; path: string; linked: boolean; services: ServiceInfo[];
+}

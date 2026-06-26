@@ -3,11 +3,20 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 #[derive(Serialize)]
+pub struct ServiceInfo {
+    name: String,
+    preferred: u16,
+    assigned: u16,
+    pid: Option<u32>,
+}
+
+#[derive(Serialize)]
 pub struct ProjectSummary {
     name: String,
     stack: String,
     path: String,
-    services_count: usize,
+    linked: bool,
+    services: Vec<ServiceInfo>,
 }
 
 #[derive(Serialize)]
@@ -26,11 +35,25 @@ fn get_projects() -> Result<Vec<ProjectSummary>, String> {
     Ok(reg
         .projects
         .into_iter()
-        .map(|(path, entry)| ProjectSummary {
-            name: entry.name,
-            stack: entry.stack,
-            path,
-            services_count: entry.services.len(),
+        .map(|(path, entry)| {
+            let mut services: Vec<ServiceInfo> = entry
+                .services
+                .into_iter()
+                .map(|(name, s)| ServiceInfo {
+                    name,
+                    preferred: s.preferred,
+                    assigned: s.assigned,
+                    pid: s.pid,
+                })
+                .collect();
+            services.sort_by_key(|s| s.assigned);
+            ProjectSummary {
+                name: entry.name,
+                stack: entry.stack,
+                path,
+                linked: entry.linked,
+                services,
+            }
         })
         .collect())
 }
@@ -78,7 +101,8 @@ fn add_project(path_str: String) -> Result<ProjectSummary, String> {
         name,
         stack: detection.stack.to_string(),
         path: path_str,
-        services_count: 0,
+        linked: true,
+        services: Vec::new(),
     })
 }
 
