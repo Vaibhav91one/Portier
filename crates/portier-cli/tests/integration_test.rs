@@ -130,6 +130,46 @@ fn test_cli_link_and_status() {
     assert!(stdout.contains("Rust"));
 }
 
+/// `portier run` should auto-register the project it launches so it becomes a
+/// tracked project, while the scanner keeps seeing every port for conflicts.
+#[test]
+fn test_run_auto_registers_project() {
+    let home = tempfile::tempdir().unwrap();
+    let proj = tempfile::tempdir().unwrap();
+    std::fs::write(
+        proj.path().join("package.json"),
+        r#"{"scripts":{"dev":"next dev"}}"#,
+    )
+    .unwrap();
+    let base = proj
+        .path()
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .to_string();
+
+    let out = Command::new(portier_bin())
+        .current_dir(proj.path())
+        .env("HOME", home.path())
+        .args(["run", "--", "sh", "-c", "true"])
+        .output()
+        .expect("Failed to run portier run");
+    assert!(
+        out.status.success(),
+        "run failed: {:?}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let reg = std::fs::read_to_string(home.path().join(".config/portier/registry.json")).unwrap();
+    assert!(reg.contains(&base), "project not registered: {reg}");
+    assert!(reg.contains("\"dev\""), "dev service not registered: {reg}");
+    // PID should be cleared after the child exits (serde skips None).
+    assert!(
+        !reg.contains("\"pid\""),
+        "PID should be cleared after exit: {reg}"
+    );
+}
+
 /// Spec §9 end-to-end: a project whose configured port is already taken should
 /// have its config files rewritten to a free port by `portier start`.
 #[test]

@@ -163,6 +163,22 @@ impl Registry {
         self.projects.insert(path, entry);
     }
 
+    /// Ensure a project entry exists at `path_key`, creating an auto-tracked
+    /// one (`linked: false`, worktree = path) if absent. Returns a mutable
+    /// reference to it. Used by `portier run`/`start` to register a project the
+    /// moment its dev server launches, without overwriting an existing entry.
+    pub fn ensure_project(&mut self, path_key: &str, name: &str, stack: &str) -> &mut ProjectEntry {
+        self.projects
+            .entry(path_key.to_string())
+            .or_insert_with(|| ProjectEntry {
+                name: name.to_string(),
+                stack: stack.to_string(),
+                services: HashMap::new(),
+                linked: false,
+                worktree: Some(path_key.to_string()),
+            })
+    }
+
     pub fn remove_project(&mut self, path: &str) {
         self.projects.remove(path);
     }
@@ -234,6 +250,35 @@ mod tests {
 
         reg.remove_project("/tmp/test");
         assert!(reg.projects.is_empty());
+    }
+
+    #[test]
+    fn test_ensure_project_adds_then_keeps() {
+        let mut reg = Registry::new();
+        // First call creates an auto-tracked entry.
+        reg.ensure_project("/tmp/app", "app", "Node");
+        assert_eq!(reg.projects.len(), 1);
+        let e = reg.get_project("/tmp/app").unwrap();
+        assert_eq!(e.name, "app");
+        assert!(!e.linked, "auto-added projects are not linked");
+
+        // Mutate it, then ensure again — must not overwrite existing data.
+        reg.get_project_mut("/tmp/app").unwrap().services.insert(
+            "dev".into(),
+            ServiceEntry {
+                preferred: 3000,
+                assigned: 3001,
+                pid: Some(42),
+            },
+        );
+        reg.ensure_project("/tmp/app", "ignored", "ignored");
+        assert_eq!(reg.projects.len(), 1);
+        let e = reg.get_project("/tmp/app").unwrap();
+        assert_eq!(
+            e.name, "app",
+            "ensure_project must not clobber an existing entry"
+        );
+        assert_eq!(e.services["dev"].assigned, 3001);
     }
 
     #[test]

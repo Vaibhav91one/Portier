@@ -1,8 +1,8 @@
 use clap::Args;
 use std::collections::HashSet;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-use libportier::registry::Registry;
+use libportier::registry::{Registry, ServiceEntry};
 
 #[derive(Args, Debug)]
 pub struct RunArgs {
@@ -12,10 +12,10 @@ pub struct RunArgs {
     /// Preferred port (overrides project config and the PORT env var)
     #[arg(long)]
     pub port: Option<u16>,
-    /// Project service whose port to allocate (and whose PID to track)
+    /// Service name to register under (default: "dev")
     #[arg(long)]
     pub service: Option<String>,
-    /// Run the command unchanged — do not allocate or inject a port
+    /// Run the command unchanged — do not allocate, inject, or track
     #[arg(long)]
     pub no_inject: bool,
 }
@@ -23,21 +23,43 @@ pub struct RunArgs {
 fn is_dev_server(cmd: &str) -> bool {
     matches!(
         cmd,
-        "npm" | "node" | "python" | "python3" | "cargo" | "next" | "vite" | "webpack" | "serve"
+        "npm"
+            | "pnpm"
+            | "yarn"
+            | "bun"
+            | "node"
+            | "deno"
+            | "python"
+            | "python3"
+            | "uvicorn"
+            | "flask"
+            | "rails"
+            | "cargo"
+            | "next"
+            | "vite"
+            | "webpack"
+            | "serve"
     )
 }
 
-/// Resolve a preferred port for this project: the named service's port from the
-/// registry, else the first registered service, else a `PORT=` in the project's
-/// `.env`. Returns `None` if nothing is configured.
-fn project_preferred(root: &Path, service: &Option<String>) -> Option<u16> {
+/// Everything needed to register and PID-track the running project.
+struct Registration {
+    root: PathBuf,
+    name: String,
+    stack: String,
+    service: String,
+    preferred: u16,
+    assigned: u16,
+}
+
+/// Resolve a preferred port: the named service's port from the registry, else
+/// the first registered service, else a `PORT=` in the project's `.env`.
+fn project_preferred(root: &Path, service: &str) -> Option<u16> {
     let path_key = root.to_string_lossy().to_string();
     if let Ok(reg) = Registry::load() {
         if let Some(entry) = reg.get_project(&path_key) {
-            if let Some(svc) = service {
-                if let Some(s) = entry.services.get(svc) {
-                    return Some(s.preferred);
-                }
+            if let Some(s) = entry.services.get(service) {
+                return Some(s.preferred);
             }
             if let Some(s) = entry.services.values().next() {
                 return Some(s.preferred);
@@ -49,19 +71,24 @@ fn project_preferred(root: &Path, service: &Option<String>) -> Option<u16> {
         .and_then(|m| m.get("PORT").copied())
 }
 
-/// Record the chosen port + child PID on the project's service, if the project
-/// is registered and a `--service` was named. Best-effort; ignores absence.
-fn track_pid(root: &Path, service: &Option<String>, port: u16, pid: Option<u32>) {
-    let (Some(svc), path_key) = (service, root.to_string_lossy().to_string()) else {
-        return;
-    };
+/// Register the project (adding it if new) and record the running PID.
+///
+/// Auto-added projects are marked `linked: false`; the port assignment is kept
+/// across runs (sticky) — only the PID is cleared when the process exits.
+fn track(r: &Registration, pid: Option<u32>) {
+    let path_key = r.root.to_string_lossy().to_string();
     let _ = Registry::update(|reg| {
-        if let Some(entry) = reg.get_project_mut(&path_key) {
-            if let Some(s) = entry.services.get_mut(svc) {
-                s.assigned = port;
-                s.pid = pid;
-            }
-        }
+        let entry = reg.ensure_project(&path_key, &r.name, &r.stack);
+        let svc = entry
+            .services
+            .entry(r.service.clone())
+            .or_insert(ServiceEntry {
+                preferred: r.preferred,
+                assigned: r.assigned,
+                pid,
+            });
+        svc.assigned = r.assigned;
+        svc.pid = pid;
         Ok(())
     });
 }
@@ -75,28 +102,29 @@ pub fn run(args: RunArgs) -> anyhow::Result<()> {
     let cwd = std::env::current_dir()?;
     let project = libportier::resolve_project_root(&cwd);
 
-    // --no-inject: preserve the old behavior — warn about conflicts, run as-is.
+    // --no-inject: pure passthrough — warn about conflicts, run as-is, no tracking.
     if args.no_inject {
         let statuses = libportier::scanner::scan()?;
         let conflicts = statuses.iter().filter(|s| s.is_conflict).count();
         if conflicts > 0 {
             println!("Detected {conflicts} port conflict(s). Run `portier scan` for details.");
         }
-        return spawn(&args.command, None, &project, &args.service);
+        return spawn(&args.command, None, None);
     }
 
-    // Resolve the preferred port: explicit flag > parent PORT env > project config > 3000.
+    let service_name = args.service.clone().unwrap_or_else(|| "dev".to_string());
+
+    // Preferred port: explicit flag > parent PORT env > project config > 3000.
     let parent_port = std::env::var("PORT")
         .ok()
         .and_then(|s| s.parse::<u16>().ok());
     let preferred = args
         .port
         .or(parent_port)
-        .or_else(|| project_preferred(&cwd, &args.service))
+        .or_else(|| project_preferred(&cwd, &service_name))
         .unwrap_or(3000);
 
-    // Scan once (fast — native APIs) and pick a free port within the
-    // configured range.
+    // Scan once (native APIs) and pick a free port within the configured range.
     let settings = libportier::Settings::load();
     let statuses = libportier::scanner::scan()?;
     let in_use: HashSet<u16> = statuses.iter().map(|s| s.port).collect();
@@ -111,8 +139,8 @@ pub fn run(args: RunArgs) -> anyhow::Result<()> {
         println!("  Injected PORT={port} (use --no-inject to disable).");
     }
 
-    // For arg-style servers (next -p, vite --port, django runserver), also
-    // rewrite the flag so it can't override the injected PORT.
+    // For arg-style servers (next -p, vite --port, django runserver), rewrite
+    // the flag too so it can't override the injected PORT.
     let command = match libportier::inject::apply_port_to_args(&args.command, port) {
         Some(rewritten) => {
             println!("  Set the port flag on the command.");
@@ -121,15 +149,36 @@ pub fn run(args: RunArgs) -> anyhow::Result<()> {
         None => args.command.clone(),
     };
 
-    spawn(&command, Some(port), &project, &args.service)
+    // Register the project the moment it starts, if we're inside a real project
+    // root. The scanner still sees every other port, so conflicts stay visible.
+    let registration = project.as_ref().map(|(name, root)| {
+        let stack = libportier::detector::detect_stack(root)
+            .map(|d| d.stack.to_string())
+            .unwrap_or_else(|_| "Unknown".to_string());
+        Registration {
+            root: root.clone(),
+            name: name.clone(),
+            stack,
+            service: service_name.clone(),
+            preferred,
+            assigned: port,
+        }
+    });
+    if let Some(r) = &registration {
+        println!(
+            "  Tracking \"{}\" → {} on {port} (portier status).",
+            r.name, r.service
+        );
+    }
+
+    spawn(&command, Some(port), registration)
 }
 
-/// Spawn the command, optionally injecting the allocated port, and wait.
+/// Spawn the command, optionally injecting the port + tracking the project, and wait.
 fn spawn(
     command: &[String],
-    port: Option<u16>,
-    project: &Option<(String, std::path::PathBuf)>,
-    service: &Option<String>,
+    inject_port: Option<u16>,
+    registration: Option<Registration>,
 ) -> anyhow::Result<()> {
     let mut cmd = std::process::Command::new(&command[0]);
     cmd.args(&command[1..])
@@ -138,7 +187,7 @@ fn spawn(
         .stdout(std::process::Stdio::inherit())
         .stderr(std::process::Stdio::inherit());
 
-    if let Some(port) = port {
+    if let Some(port) = inject_port {
         for (key, value) in libportier::framework_env_vars(command, port) {
             cmd.env(key, value);
         }
@@ -148,16 +197,14 @@ fn spawn(
         .spawn()
         .map_err(|e| anyhow::anyhow!("Failed to spawn command: {}", e))?;
 
-    // Record the running PID on the project's service (best-effort).
-    if let (Some(port), Some((_, root))) = (port, project) {
-        track_pid(root, service, port, Some(child.id()));
+    // Record the running PID, then clear it once the child exits (keeping the
+    // sticky port assignment for next time).
+    if let Some(r) = &registration {
+        track(r, Some(child.id()));
     }
-
     let status = child.wait()?;
-
-    // Clear the PID once the child exits so the registry doesn't keep a stale one.
-    if let (Some(port), Some((_, root))) = (port, project) {
-        track_pid(root, service, port, None);
+    if let Some(r) = &registration {
+        track(r, None);
     }
 
     if !status.success() {

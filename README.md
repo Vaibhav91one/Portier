@@ -34,7 +34,10 @@ portier start                   # detect, assign free ports, rewrite configs, la
 
 `portier run` is the fastest path: it scans, picks a free port, injects `PORT`
 (and rewrites `next -p` / `vite --port` / Django `runserver` flags), then runs
-your command — so an agent-spawned dev server never hits `EADDRINUSE`.
+your command — so an agent-spawned dev server never hits `EADDRINUSE`. It also
+**registers the project the moment it starts**, so every running project is
+tracked (with a sticky port) while Portier keeps watching every port on the
+machine to surface conflicts.
 
 ## Commands
 

@@ -133,11 +133,19 @@ pub fn run(args: StartArgs) -> anyhow::Result<()> {
         }
 
         libportier::registry::Registry::update(|reg| {
-            if let Some(project) = reg.get_project_mut(&path_key) {
+            // Register the project (auto-add if it wasn't linked) so a started
+            // project is always tracked.
+            let project = reg.ensure_project(&path_key, &config.name, &config.stack);
+            {
                 for (service, port) in &assignments {
-                    if let Some(entry) = project.services.get_mut(service) {
-                        entry.assigned = *port;
-                    }
+                    let svc = project.services.entry(service.clone()).or_insert(
+                        libportier::registry::ServiceEntry {
+                            preferred: *preferred_ports.get(service).unwrap_or(port),
+                            assigned: *port,
+                            pid: None,
+                        },
+                    );
+                    svc.assigned = *port;
                 }
 
                 // Launch services that have a command configured
