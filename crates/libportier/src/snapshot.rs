@@ -54,7 +54,7 @@ pub fn save_snapshot(snapshot: &Snapshot, snapshots_dir: &Path) -> Result<()> {
 }
 
 fn sanitize_path(path: &str) -> String {
-    path.replace('/', "__").replace('\\', "__")
+    path.replace(['/', '\\'], "__")
 }
 
 pub fn get_snapshots(snapshots_dir: &Path) -> Result<Vec<String>> {
@@ -64,7 +64,7 @@ pub fn get_snapshots(snapshots_dir: &Path) -> Result<Vec<String>> {
     let mut ids = Vec::new();
     for entry in fs::read_dir(snapshots_dir)? {
         let entry = entry?;
-        if entry.path().extension().map_or(false, |e| e == "json") {
+        if entry.path().extension().is_some_and(|e| e == "json") {
             if let Some(stem) = entry.path().file_stem() {
                 ids.push(stem.to_string_lossy().to_string());
             }
@@ -129,6 +129,38 @@ mod tests {
         // Verify the file content matches the original
         let restored = std::fs::read_to_string(tmp_path.join(file_path)).unwrap();
         assert_eq!(restored, original_content);
+    }
+
+    #[test]
+    fn test_snapshot_persistence_round_trip() {
+        let proj = TempDir::new().unwrap();
+        let store = TempDir::new().unwrap();
+        std::fs::write(proj.path().join(".env"), "PORT=3000\n").unwrap();
+
+        // take -> save
+        let snap = take_snapshot(proj.path(), &[".env".to_string()]).unwrap();
+        save_snapshot(&snap, store.path()).unwrap();
+
+        // get lists the id
+        let ids = get_snapshots(store.path()).unwrap();
+        assert!(ids.contains(&snap.id));
+
+        // load reads it back intact
+        let loaded = load_snapshot(&snap.id, store.path()).unwrap();
+        assert_eq!(loaded.files.len(), 1);
+        assert_eq!(loaded.files[0].file_path, ".env");
+        assert_eq!(loaded.files[0].content, "PORT=3000\n");
+
+        // delete removes it
+        delete_snapshot(&snap.id, store.path()).unwrap();
+        assert!(!get_snapshots(store.path()).unwrap().contains(&snap.id));
+    }
+
+    #[test]
+    fn test_take_snapshot_skips_missing_files() {
+        let proj = TempDir::new().unwrap();
+        let snap = take_snapshot(proj.path(), &["does-not-exist.env".to_string()]).unwrap();
+        assert!(snap.files.is_empty());
     }
 
     #[test]

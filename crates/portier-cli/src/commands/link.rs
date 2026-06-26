@@ -27,7 +27,11 @@ pub fn run(args: LinkArgs) -> anyhow::Result<()> {
     }
 
     let detection = libportier::detector::detect_stack(&project_path)?;
-    output::print_success(format!("Detected stack: {} ({})", detection.stack, detection.config_files.join(", ")));
+    output::print_success(format!(
+        "Detected stack: {} ({})",
+        detection.stack,
+        detection.config_files.join(", ")
+    ));
 
     // Read existing project config if present
     let existing_config = libportier::config::ProjectConfig::load(&project_path)?;

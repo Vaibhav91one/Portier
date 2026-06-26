@@ -207,7 +207,13 @@ pub fn detect_project_from_pid(pid: u32) -> Option<(String, PathBuf)> {
         // Strategy 2: filter user paths, find the deepest marker dir, climb up.
         fn is_user_path(p: &str) -> bool {
             let sys_prefixes = [
-                "/usr", "/System", "/Library", "/private/var", "/dev", "/etc", "/opt",
+                "/usr",
+                "/System",
+                "/Library",
+                "/private/var",
+                "/dev",
+                "/etc",
+                "/opt",
             ];
             !sys_prefixes.iter().any(|pfx| p.starts_with(pfx))
         }

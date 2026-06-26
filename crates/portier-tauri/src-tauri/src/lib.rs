@@ -1,4 +1,4 @@
-use libportier::{PortStatus, Registry, ProjectEntry, ServiceEntry};
+use libportier::{PortStatus, ProjectEntry, Registry, ServiceEntry};
 use serde::Serialize;
 use std::collections::HashMap;
 
@@ -66,11 +66,7 @@ fn assign_port(project_path: String, service: String, port: u16) -> Result<(), S
 fn add_project(path_str: String) -> Result<ProjectSummary, String> {
     let root = std::path::Path::new(&path_str);
     let detection = libportier::detector::detect_stack(root).map_err(|e| e.to_string())?;
-    let name = root
-        .file_name()
-        .unwrap()
-        .to_string_lossy()
-        .to_string();
+    let name = root.file_name().unwrap().to_string_lossy().to_string();
     let entry = ProjectEntry {
         name: name.clone(),
         stack: detection.stack.to_string(),
@@ -114,7 +110,7 @@ fn get_port_project_map() -> Result<Vec<PortProjectMap>, String> {
     // Build pid -> (project_name, service_name) from registry tracked PIDs
     let mut pid_map: HashMap<u32, (String, String)> = HashMap::new();
     if let Some(ref reg) = registry {
-        for (_, entry) in &reg.projects {
+        for entry in reg.projects.values() {
             for (svc_name, svc) in &entry.services {
                 if let Some(pid) = svc.pid {
                     pid_map.insert(pid, (entry.name.clone(), svc_name.clone()));

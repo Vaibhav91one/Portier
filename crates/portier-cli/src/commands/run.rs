@@ -86,7 +86,9 @@ pub fn run(args: RunArgs) -> anyhow::Result<()> {
     }
 
     // Resolve the preferred port: explicit flag > parent PORT env > project config > 3000.
-    let parent_port = std::env::var("PORT").ok().and_then(|s| s.parse::<u16>().ok());
+    let parent_port = std::env::var("PORT")
+        .ok()
+        .and_then(|s| s.parse::<u16>().ok());
     let preferred = args
         .port
         .or(parent_port)

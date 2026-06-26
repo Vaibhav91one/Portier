@@ -1,25 +1,28 @@
-pub mod error;
-pub mod scanner;
-pub mod registry;
-pub mod detector;
-pub mod config;
-pub mod settings;
 pub mod assigner;
-pub mod inject;
-pub mod rewriter;
-pub mod snapshot;
+pub mod config;
 pub mod daemon;
+pub mod detector;
+pub mod error;
+pub mod inject;
+pub mod registry;
+pub mod rewriter;
+pub mod scanner;
+pub mod settings;
+pub mod snapshot;
 
-pub use error::{PortierError, Result};
-pub use scanner::{PortStatus, scan};
-pub use registry::{Registry, ProjectEntry, ServiceEntry};
+pub use assigner::{pick_free_port, Assigner};
+pub use config::ProjectConfig;
 pub use detector::{
     detect_project_from_pid, find_common_project_root, resolve_project_root, DetectionResult,
     ProjectStack,
 };
-pub use config::ProjectConfig;
-pub use settings::Settings;
-pub use assigner::{pick_free_port, Assigner};
+pub use error::{PortierError, Result};
 pub use inject::framework_env_vars;
+pub use registry::{ProjectEntry, Registry, ServiceEntry};
 pub use rewriter::{ConfigBackend, DiffLine, PortDeclaration};
-pub use snapshot::{Snapshot, take_snapshot, save_snapshot, load_snapshot, delete_snapshot, get_snapshots, restore_snapshot};
+pub use scanner::{scan, PortStatus};
+pub use settings::Settings;
+pub use snapshot::{
+    delete_snapshot, get_snapshots, load_snapshot, restore_snapshot, save_snapshot, take_snapshot,
+    Snapshot,
+};

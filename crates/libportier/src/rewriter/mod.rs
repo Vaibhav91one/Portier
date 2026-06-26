@@ -1,12 +1,12 @@
 use crate::error::Result;
-use crate::snapshot::{Snapshot, take_snapshot};
+use crate::snapshot::{take_snapshot, Snapshot};
 use std::collections::HashMap;
 use std::path::Path;
 
 pub mod docker;
 pub mod dotenv;
-pub mod nginx;
 pub mod generic;
+pub mod nginx;
 
 #[derive(Debug, Clone)]
 pub struct PortDeclaration {

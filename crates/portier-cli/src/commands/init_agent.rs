@@ -18,7 +18,8 @@ pub fn run(args: InitAgentArgs) -> anyhow::Result<()> {
 
     // 1. Create .mcp.json
     let mcp_path = target_path.join(".mcp.json");
-    let portier_bin = std::env::current_exe().ok()
+    let portier_bin = std::env::current_exe()
+        .ok()
         .map(|p| p.to_string_lossy().to_string())
         .unwrap_or_else(|| "portier".to_string());
     let mcp_config = serde_json::json!({
@@ -55,21 +56,19 @@ Use `portier run -- <command>` instead of running commands directly.
 
     // 3. Add to CLAUDE.md
     let claude_md_path = target_path.join("CLAUDE.md");
-    if claude_md_path.exists() {
-        if args.yes || confirm("Add Portier section to CLAUDE.md?") {
-            let mut content = std::fs::read_to_string(&claude_md_path)?;
-            if !content.contains("Portier") {
-                content.push_str("\n\n## Port Management\n\n");
-                content.push_str("Portier handles port conflicts automatically:\n");
-                content.push_str("- `portier scan` before starting any dev server\n");
-                content.push_str("- `portier start` instead of `npm run dev`\n");
-                content.push_str("- `portier run -- <cmd>` to prevent EADDRINUSE\n");
-                content.push_str("- `portier daemon` for background auto-healing\n");
-                std::fs::write(&claude_md_path, &content)?;
-                output::print_success("Updated CLAUDE.md");
-            } else {
-                output::print_warning("Portier already in CLAUDE.md, skipping.");
-            }
+    if claude_md_path.exists() && (args.yes || confirm("Add Portier section to CLAUDE.md?")) {
+        let mut content = std::fs::read_to_string(&claude_md_path)?;
+        if !content.contains("Portier") {
+            content.push_str("\n\n## Port Management\n\n");
+            content.push_str("Portier handles port conflicts automatically:\n");
+            content.push_str("- `portier scan` before starting any dev server\n");
+            content.push_str("- `portier start` instead of `npm run dev`\n");
+            content.push_str("- `portier run -- <cmd>` to prevent EADDRINUSE\n");
+            content.push_str("- `portier daemon` for background auto-healing\n");
+            std::fs::write(&claude_md_path, &content)?;
+            output::print_success("Updated CLAUDE.md");
+        } else {
+            output::print_warning("Portier already in CLAUDE.md, skipping.");
         }
     }
 

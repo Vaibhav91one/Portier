@@ -193,8 +193,8 @@ mod tests {
         let ports = extract_env_port(dir.path()).unwrap();
         assert_eq!(ports.get("PORT"), Some(&3000));
         assert_eq!(ports.get("API_PORT"), Some(&4001));
-        assert!(ports.get("COMMENT").is_none());
-        assert!(ports.get("FOO").is_none());
+        assert!(!ports.contains_key("COMMENT"));
+        assert!(!ports.contains_key("FOO"));
     }
 
     #[test]

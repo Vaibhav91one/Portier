@@ -48,7 +48,11 @@ pub fn run(args: StatusArgs) -> anyhow::Result<()> {
             entry.name.clone(),
             entry.stack.clone(),
             output::home_relative(path),
-            if services.is_empty() { "—".to_string() } else { services },
+            if services.is_empty() {
+                "—".to_string()
+            } else {
+                services
+            },
         ]);
     }
     output::print_table(headers, &rows);

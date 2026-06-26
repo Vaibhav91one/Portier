@@ -60,7 +60,7 @@ pub fn run(args: ScanArgs) -> anyhow::Result<()> {
             output::print_hint("No projects registered yet. Add one with: portier link");
         } else {
             println!("\n  Registered projects:");
-            for (_path, entry) in &registry.projects {
+            for entry in registry.projects.values() {
                 println!("    {} ({})", entry.name, entry.stack);
                 for (svc, svc_entry) in &entry.services {
                     println!("      {} → {}", svc, svc_entry.assigned);

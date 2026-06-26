@@ -39,7 +39,8 @@ impl ConfigBackend for DockerComposeBackend {
         if let Some(services) = value.get("services").and_then(|s| s.as_mapping()) {
             for (service_name, service_config) in services {
                 let service_name_str = service_name.as_str().unwrap_or("unknown");
-                if let Some(ports_list) = service_config.get("ports").and_then(|p| p.as_sequence()) {
+                if let Some(ports_list) = service_config.get("ports").and_then(|p| p.as_sequence())
+                {
                     for (i, port_entry) in ports_list.iter().enumerate() {
                         if let Some(port_str) = port_entry.as_str() {
                             let parts: Vec<&str> = port_str.split(':').collect();
@@ -70,14 +71,20 @@ impl ConfigBackend for DockerComposeBackend {
         if let Some(services) = value.get_mut("services").and_then(|s| s.as_mapping_mut()) {
             for (service_name, service_config) in services.iter_mut() {
                 let service_name_str = service_name.as_str().unwrap_or("unknown");
-                if let Some(ports_list) = service_config.get_mut("ports").and_then(|p| p.as_sequence_mut()) {
+                if let Some(ports_list) = service_config
+                    .get_mut("ports")
+                    .and_then(|p| p.as_sequence_mut())
+                {
                     for (i, port_entry) in ports_list.iter_mut().enumerate() {
                         let key = format!("{}:ports[{}]", service_name_str, i);
                         if let Some(&new_port) = assignments.get(&key) {
                             if let Some(port_str) = port_entry.as_str() {
                                 if let Some(colon_pos) = port_str.rfind(':') {
                                     let container_part = &port_str[colon_pos + 1..];
-                                    *port_entry = serde_yaml::Value::String(format!("{}:{}", new_port, container_part));
+                                    *port_entry = serde_yaml::Value::String(format!(
+                                        "{}:{}",
+                                        new_port, container_part
+                                    ));
                                 } else {
                                     // Single port value, replace entirely
                                     *port_entry = serde_yaml::Value::String(new_port.to_string());
@@ -102,7 +109,8 @@ impl ConfigBackend for DockerComposeBackend {
         if let Some(services) = value.get("services").and_then(|s| s.as_mapping()) {
             for (service_name, service_config) in services {
                 let service_name_str = service_name.as_str().unwrap_or("unknown");
-                if let Some(ports_list) = service_config.get("ports").and_then(|p| p.as_sequence()) {
+                if let Some(ports_list) = service_config.get("ports").and_then(|p| p.as_sequence())
+                {
                     for (i, port_entry) in ports_list.iter().enumerate() {
                         let key = format!("{}:ports[{}]", service_name_str, i);
                         if let Some(&new_port) = assignments.get(&key) {
@@ -144,12 +152,15 @@ mod tests {
     #[test]
     fn test_read_ports_host_container() {
         let mut file = tempfile::NamedTempFile::new().unwrap();
-        let path = write_compose(&mut file, r#"
+        let path = write_compose(
+            &mut file,
+            r#"
 services:
   web:
     ports:
       - "3000:3000"
-"#);
+"#,
+        );
         let backend = DockerComposeBackend::new(&path);
         let ports = backend.read_ports().unwrap();
         assert_eq!(ports.len(), 1);
@@ -160,12 +171,15 @@ services:
     #[test]
     fn test_read_ports_ip_host_container() {
         let mut file = tempfile::NamedTempFile::new().unwrap();
-        let path = write_compose(&mut file, r#"
+        let path = write_compose(
+            &mut file,
+            r#"
 services:
   web:
     ports:
       - "127.0.0.1:3000:3000"
-"#);
+"#,
+        );
         let backend = DockerComposeBackend::new(&path);
         let ports = backend.read_ports().unwrap();
         assert_eq!(ports.len(), 1);
@@ -176,12 +190,15 @@ services:
     #[test]
     fn test_read_ports_mapped_ports() {
         let mut file = tempfile::NamedTempFile::new().unwrap();
-        let path = write_compose(&mut file, r#"
+        let path = write_compose(
+            &mut file,
+            r#"
 services:
   web:
     ports:
       - "8080:80"
-"#);
+"#,
+        );
         let backend = DockerComposeBackend::new(&path);
         let ports = backend.read_ports().unwrap();
         assert_eq!(ports.len(), 1);
@@ -193,12 +210,15 @@ services:
     fn test_read_ports_roundtrip_write() {
         // Write original, read ports, assign new port, write back, read again
         let mut file = tempfile::NamedTempFile::new().unwrap();
-        let path = write_compose(&mut file, r#"
+        let path = write_compose(
+            &mut file,
+            r#"
 services:
   web:
     ports:
       - "127.0.0.1:3000:3000"
-"#);
+"#,
+        );
         let backend = DockerComposeBackend::new(&path);
         let ports = backend.read_ports().unwrap();
         assert_eq!(ports[0].port, 3000);

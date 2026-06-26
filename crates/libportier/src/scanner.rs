@@ -54,7 +54,9 @@ fn build_statuses(raw: Vec<(u16, u32, String)>) -> Vec<PortStatus> {
     let mut ports: HashMap<u16, (Vec<u32>, Vec<String>)> = HashMap::new();
 
     for (port, pid, name) in raw {
-        let (pids, names) = ports.entry(port).or_insert_with(|| (Vec::new(), Vec::new()));
+        let (pids, names) = ports
+            .entry(port)
+            .or_insert_with(|| (Vec::new(), Vec::new()));
         if !pids.contains(&pid) {
             pids.push(pid);
             names.push(name);

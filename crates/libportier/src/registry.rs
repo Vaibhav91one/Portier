@@ -84,6 +84,7 @@ impl Registry {
             .create(true)
             .write(true)
             .read(true)
+            .truncate(false) // lock file is a flock target; never truncate it
             .open(&lock_path)?;
         FileLock::new(file)
             .map_err(|e| PortierError::Registry(format!("failed to acquire registry lock: {e}")))
@@ -179,6 +180,18 @@ impl Default for Registry {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Resolve the user's home directory.
+fn dirs_next() -> Option<PathBuf> {
+    if let Ok(home) = std::env::var("HOME") {
+        return Some(PathBuf::from(home));
+    }
+    #[cfg(target_os = "windows")]
+    if let Ok(profile) = std::env::var("USERPROFILE") {
+        return Some(PathBuf::from(profile));
+    }
+    None
 }
 
 #[cfg(test)]
@@ -348,15 +361,23 @@ mod tests {
         // With Registry::update holding one lock across read-modify-write,
         // neither thread can clobber the other: ALL three projects survive.
         let loaded = Registry::load().unwrap();
-        assert!(loaded.get_project("/initial").is_some(), "initial entry must survive");
-        assert!(loaded.get_project("/thread1").is_some(), "thread1 must not be lost");
-        assert!(loaded.get_project("/thread2").is_some(), "thread2 must not be lost");
+        assert!(
+            loaded.get_project("/initial").is_some(),
+            "initial entry must survive"
+        );
+        assert!(
+            loaded.get_project("/thread1").is_some(),
+            "thread1 must not be lost"
+        );
+        assert!(
+            loaded.get_project("/thread2").is_some(),
+            "thread2 must not be lost"
+        );
 
         // The file is valid JSON.
         let path = Registry::registry_path().unwrap();
         let raw = std::fs::read_to_string(&path).unwrap();
-        serde_json::from_str::<serde_json::Value>(&raw)
-            .expect("registry file must be valid JSON");
+        serde_json::from_str::<serde_json::Value>(&raw).expect("registry file must be valid JSON");
 
         if let Some(h) = original_home {
             env::set_var("HOME", h);
@@ -405,7 +426,10 @@ mod tests {
         assert!(result.is_err());
 
         let loaded = Registry::load().unwrap();
-        assert!(loaded.get_project("/keep").is_some(), "committed entry survives");
+        assert!(
+            loaded.get_project("/keep").is_some(),
+            "committed entry survives"
+        );
         assert!(
             loaded.get_project("/discard").is_none(),
             "aborted transaction must not persist"
@@ -415,16 +439,4 @@ mod tests {
             env::set_var("HOME", h);
         }
     }
-}
-
-/// Resolve the user's home directory.
-fn dirs_next() -> Option<PathBuf> {
-    if let Ok(home) = std::env::var("HOME") {
-        return Some(PathBuf::from(home));
-    }
-    #[cfg(target_os = "windows")]
-    if let Ok(profile) = std::env::var("USERPROFILE") {
-        return Some(PathBuf::from(profile));
-    }
-    None
 }

@@ -38,7 +38,8 @@ pub fn run(args: ConfigArgs) -> anyhow::Result<()> {
 
             let detection = libportier::detector::detect_stack(&cwd)?;
 
-            let mut config = libportier::config::ProjectConfig::new(project_name, detection.stack.to_string());
+            let mut config =
+                libportier::config::ProjectConfig::new(project_name, detection.stack.to_string());
 
             // Try to extract ports from .env
             let env_ports = libportier::config::extract_env_port(&cwd)?;
@@ -53,22 +54,24 @@ pub fn run(args: ConfigArgs) -> anyhow::Result<()> {
             }
 
             config.save(&cwd)?;
-            output::print_success(format!("Created portier.json for {} ({})", config.name, config.stack));
+            output::print_success(format!(
+                "Created portier.json for {} ({})",
+                config.name, config.stack
+            ));
         }
-        Some(ConfigAction::Show) => {
-            match libportier::config::ProjectConfig::load(&cwd)? {
-                Some(config) => {
-                    output::print_json(&config);
-                }
-                None => {
-                    output::print_warning("No portier.json found in current directory.");
-                    output::print_success("Run 'portier config --init' to create one.");
-                }
+        Some(ConfigAction::Show) => match libportier::config::ProjectConfig::load(&cwd)? {
+            Some(config) => {
+                output::print_json(&config);
             }
-        }
+            None => {
+                output::print_warning("No portier.json found in current directory.");
+                output::print_success("Run 'portier config --init' to create one.");
+            }
+        },
         Some(ConfigAction::Set { key_value }) => {
-            let mut config = libportier::config::ProjectConfig::load(&cwd)?
-                .ok_or_else(|| anyhow::anyhow!("No portier.json found. Run 'portier config --init' first."))?;
+            let mut config = libportier::config::ProjectConfig::load(&cwd)?.ok_or_else(|| {
+                anyhow::anyhow!("No portier.json found. Run 'portier config --init' first.")
+            })?;
 
             let parts: Vec<&str> = key_value.splitn(2, '=').collect();
             if parts.len() != 2 {
@@ -84,18 +87,23 @@ pub fn run(args: ConfigArgs) -> anyhow::Result<()> {
                 if sub.len() == 2 {
                     let port_name = sub[0].to_string();
                     let field = sub[1];
-                    let port_val: u16 = val.parse()
+                    let port_val: u16 = val
+                        .parse()
                         .map_err(|_| anyhow::anyhow!("Invalid port number: {}", val))?;
 
-                    let entry = config.ports.entry(port_name.clone())
-                        .or_insert_with(|| libportier::config::PortConfig {
+                    let entry = config.ports.entry(port_name.clone()).or_insert_with(|| {
+                        libportier::config::PortConfig {
                             preferred: port_val,
                             assigned: None,
-                        });
+                        }
+                    });
                     match field {
                         "preferred" => entry.preferred = port_val,
                         "assigned" => entry.assigned = Some(port_val),
-                        _ => anyhow::bail!("Unknown port field: {}. Use 'preferred' or 'assigned'.", field),
+                        _ => anyhow::bail!(
+                            "Unknown port field: {}. Use 'preferred' or 'assigned'.",
+                            field
+                        ),
                     }
                 }
             }

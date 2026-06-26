@@ -149,7 +149,8 @@ mod tests {
 
     #[test]
     fn test_django_replaces_address_port() {
-        let out = apply_port_to_args(&cmd("python manage.py runserver 0.0.0.0:8000"), 8001).unwrap();
+        let out =
+            apply_port_to_args(&cmd("python manage.py runserver 0.0.0.0:8000"), 8001).unwrap();
         assert_eq!(out, cmd("python manage.py runserver 0.0.0.0:8001"));
     }
 

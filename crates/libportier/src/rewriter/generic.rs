@@ -33,14 +33,22 @@ impl GenericBackend {
 
     // JSON helpers -----------------------------------------------------------
 
-    fn collect_json_ports(value: &serde_json::Value, path: &str, file_path: &str) -> Vec<PortDeclaration> {
+    fn collect_json_ports(
+        value: &serde_json::Value,
+        path: &str,
+        file_path: &str,
+    ) -> Vec<PortDeclaration> {
         match value {
             serde_json::Value::Number(n) => {
                 if path.to_ascii_lowercase().contains("port") {
                     if let Some(port) = n.as_u64().and_then(|n| u16::try_from(n).ok()) {
                         return vec![PortDeclaration {
                             service: "generic".to_string(),
-                            key: if path.is_empty() { "$".to_string() } else { path.to_string() },
+                            key: if path.is_empty() {
+                                "$".to_string()
+                            } else {
+                                path.to_string()
+                            },
                             port,
                             file_path: file_path.to_string(),
                         }];
@@ -109,14 +117,22 @@ impl GenericBackend {
 
     // YAML helpers -----------------------------------------------------------
 
-    fn collect_yaml_ports(value: &serde_yaml::Value, path: &str, file_path: &str) -> Vec<PortDeclaration> {
+    fn collect_yaml_ports(
+        value: &serde_yaml::Value,
+        path: &str,
+        file_path: &str,
+    ) -> Vec<PortDeclaration> {
         match value {
             serde_yaml::Value::Number(n) => {
                 if path.to_ascii_lowercase().contains("port") {
                     if let Some(port) = n.as_u64().and_then(|n| u16::try_from(n).ok()) {
                         return vec![PortDeclaration {
                             service: "generic".to_string(),
-                            key: if path.is_empty() { "$".to_string() } else { path.to_string() },
+                            key: if path.is_empty() {
+                                "$".to_string()
+                            } else {
+                                path.to_string()
+                            },
                             port,
                             file_path: file_path.to_string(),
                         }];
@@ -164,8 +180,9 @@ impl GenericBackend {
                 seq[i] = serde_yaml::Value::Number(serde_yaml::Number::from(new_port));
             } else {
                 Self::set_yaml_at_path(
-                    seq.get_mut(i)
-                        .ok_or_else(|| PortierError::Config(format!("index out of bounds: {}", path)))?,
+                    seq.get_mut(i).ok_or_else(|| {
+                        PortierError::Config(format!("index out of bounds: {}", path))
+                    })?,
                     rest,
                     new_port,
                 )?;
@@ -181,7 +198,7 @@ impl GenericBackend {
                 );
             } else {
                 let next = map
-                    .get_mut(&serde_yaml::Value::String(first.to_string()))
+                    .get_mut(serde_yaml::Value::String(first.to_string()))
                     .ok_or_else(|| PortierError::Config(format!("key not found: {}", path)))?;
                 Self::set_yaml_at_path(next, rest, new_port)?;
             }
@@ -272,7 +289,11 @@ mod tests {
 
         let backend = GenericBackend::new(&path);
         let ports = backend.read_ports().unwrap();
-        assert_eq!(ports.len(), 2, "only port and api_port keys should be detected");
+        assert_eq!(
+            ports.len(),
+            2,
+            "only port and api_port keys should be detected"
+        );
 
         let keys: Vec<&str> = ports.iter().map(|p| p.key.as_str()).collect();
         assert!(keys.contains(&"port"));
@@ -311,7 +332,11 @@ description: some text
 
         let backend = GenericBackend::new(&path);
         let ports = backend.read_ports().unwrap();
-        assert_eq!(ports.len(), 2, "only port and api_port keys should be detected");
+        assert_eq!(
+            ports.len(),
+            2,
+            "only port and api_port keys should be detected"
+        );
 
         let keys: Vec<&str> = ports.iter().map(|p| p.key.as_str()).collect();
         assert!(keys.contains(&"port"));

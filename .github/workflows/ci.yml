@@ -7,14 +7,24 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: cargo fmt --all -- --check
+      # Lint the pure-Rust crates (portier-tauri needs system webkit deps).
+      - run: cargo clippy -p libportier -p portier-cli -p portier-mcp --all-targets -- -D warnings
+
+  test:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo build
-      - run: cargo test
+      - run: cargo build -p libportier -p portier-cli -p portier-mcp
+      - run: cargo test -p libportier -p portier-cli -p portier-mcp

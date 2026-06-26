@@ -98,11 +98,7 @@ impl Assigner {
                 }
 
                 // Find free port in range
-                let port = self.find_free_port(
-                    search_range.clone(),
-                    in_use,
-                    &used_in_session,
-                );
+                let port = self.find_free_port(search_range.clone(), in_use, &used_in_session);
                 if let Some(p) = port {
                     assigned.insert(service.clone(), p);
                     used_in_session.insert(p);
@@ -118,16 +114,11 @@ impl Assigner {
 
     fn find_free_port(
         &self,
-        range: std::ops::Range<u16>,
+        mut range: std::ops::Range<u16>,
         in_use: &HashSet<u16>,
         used_in_session: &HashSet<u16>,
     ) -> Option<u16> {
-        for port in range {
-            if !in_use.contains(&port) && !used_in_session.contains(&port) {
-                return Some(port);
-            }
-        }
-        None
+        range.find(|port| !in_use.contains(port) && !used_in_session.contains(port))
     }
 }
 

@@ -47,7 +47,10 @@ pub fn run(args: SwitchArgs) -> anyhow::Result<()> {
         }
     };
 
-    output::print_success(format!("Switching to '{}' at {}", target_entry.name, target_path));
+    output::print_success(format!(
+        "Switching to '{}' at {}",
+        target_entry.name, target_path
+    ));
 
     // 3. Free ports for current project, assign ports for target
     // Collect target preferred ports
@@ -71,19 +74,23 @@ pub fn run(args: SwitchArgs) -> anyhow::Result<()> {
         if port == preferred {
             output::print_success(format!("{} -> {} (free)", service, port));
         } else {
-            output::print_warning(format!("{} {} -> {} (reassigned)", service, preferred, port));
+            output::print_warning(format!(
+                "{} {} -> {} (reassigned)",
+                service, preferred, port
+            ));
         }
     }
 
     // 5. Apply to config files
     let target_root = std::path::Path::new(&target_path);
     let config_files = libportier::config::find_config_files(target_root, &target_entry.stack);
-    let snapshot = libportier::rewriter::apply_assignments(&assignments, &config_files, target_root)?;
+    let snapshot =
+        libportier::rewriter::apply_assignments(&assignments, &config_files, target_root)?;
     output::print_success(format!("Snapshot saved: {}", snapshot.id));
 
     // 6. Update registry — clear all PIDs, set target assignments
     libportier::registry::Registry::update(|reg| {
-        for (_, entry) in &mut reg.projects {
+        for entry in reg.projects.values_mut() {
             for service in entry.services.values_mut() {
                 service.pid = None;
             }

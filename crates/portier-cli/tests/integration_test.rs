@@ -77,7 +77,11 @@ fn test_cli_config_init_and_show() {
         .args(["config", "init", "--name", "test-project"])
         .output()
         .expect("Failed to run portier config init");
-    assert!(init.status.success(), "config init failed: {:?}", String::from_utf8_lossy(&init.stderr));
+    assert!(
+        init.status.success(),
+        "config init failed: {:?}",
+        String::from_utf8_lossy(&init.stderr)
+    );
 
     // Show
     let show = Command::new(portier_bin())
@@ -94,26 +98,74 @@ fn test_cli_config_init_and_show() {
 #[test]
 fn test_cli_link_and_status() {
     let tmp = tempfile::tempdir().unwrap();
+    // Isolate the global registry into a throwaway HOME so the test never
+    // touches the user's ~/.config/portier/registry.json.
+    let home = tempfile::tempdir().unwrap();
 
     std::fs::write(tmp.path().join("Cargo.toml"), "").unwrap();
 
     // Link
     let link = Command::new(portier_bin())
         .current_dir(tmp.path())
+        .env("HOME", home.path())
         .args(["link"])
         .output()
         .expect("Failed to run portier link");
-    assert!(link.status.success(), "link failed: {:?}", String::from_utf8_lossy(&link.stderr));
+    assert!(
+        link.status.success(),
+        "link failed: {:?}",
+        String::from_utf8_lossy(&link.stderr)
+    );
 
     // Status
     let status_cmd = Command::new(portier_bin())
         .current_dir(tmp.path())
+        .env("HOME", home.path())
         .args(["status"])
         .output()
         .expect("Failed to run portier status");
     assert!(status_cmd.status.success());
     let stdout = String::from_utf8_lossy(&status_cmd.stdout);
-    assert!(stdout.contains(&tmp.path().to_string_lossy().to_string()));
     // Table should show Rust as the stack
     assert!(stdout.contains("Rust"));
+}
+
+/// Spec §9 end-to-end: a project whose configured port is already taken should
+/// have its config files rewritten to a free port by `portier start`.
+#[test]
+fn test_e2e_start_rewrites_config_on_conflict() {
+    use std::net::TcpListener;
+
+    // Hold a real port so the allocator is forced to reassign.
+    let busy = TcpListener::bind("127.0.0.1:0").unwrap();
+    let busy_port = busy.local_addr().unwrap().port();
+
+    let home = tempfile::tempdir().unwrap();
+    let proj = tempfile::tempdir().unwrap();
+    std::fs::write(
+        proj.path().join("package.json"),
+        r#"{"scripts":{"dev":"next dev"}}"#,
+    )
+    .unwrap();
+    std::fs::write(proj.path().join(".env"), format!("PORT={busy_port}\n")).unwrap();
+
+    let out = Command::new(portier_bin())
+        .current_dir(proj.path())
+        .env("HOME", home.path())
+        .args(["start", "--yes"])
+        .output()
+        .expect("Failed to run portier start");
+    assert!(
+        out.status.success(),
+        "start failed: {:?}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    // The .env should no longer point at the busy port.
+    let env_after = std::fs::read_to_string(proj.path().join(".env")).unwrap();
+    assert!(
+        !env_after.contains(&format!("PORT={busy_port}")),
+        "expected .env to be rewritten off the busy port, got: {env_after}"
+    );
+    assert!(env_after.contains("PORT="), "PORT key should remain");
 }

@@ -11,7 +11,9 @@ pub struct StopArgs {
 
 pub fn run(args: StopArgs) -> anyhow::Result<()> {
     let cwd = std::env::current_dir()?;
-    let path_key = args.name.unwrap_or_else(|| cwd.to_string_lossy().to_string());
+    let path_key = args
+        .name
+        .unwrap_or_else(|| cwd.to_string_lossy().to_string());
 
     let registry = libportier::registry::Registry::load()?;
 

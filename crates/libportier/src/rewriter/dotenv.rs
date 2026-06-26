@@ -151,7 +151,10 @@ mod tests {
         backend.write_ports(&assignments).unwrap();
 
         let result = fs::read_to_string(&path).unwrap();
-        assert!(result.ends_with('\n'), "trailing newline should be preserved");
+        assert!(
+            result.ends_with('\n'),
+            "trailing newline should be preserved"
+        );
         assert!(result.contains("PORT=8080"), "port value should be updated");
     }
 
@@ -168,7 +171,10 @@ mod tests {
         backend.write_ports(&assignments).unwrap();
 
         let result = fs::read_to_string(&path).unwrap();
-        assert!(!result.ends_with('\n'), "no trailing newline should not be added");
+        assert!(
+            !result.ends_with('\n'),
+            "no trailing newline should not be added"
+        );
         assert!(result.contains("PORT=8080"), "port value should be updated");
     }
 
@@ -213,7 +219,10 @@ mod tests {
         assert!(result.contains("PORT=4000"));
         assert!(result.contains("API_PORT=5000"));
         assert!(result.contains("HOST=localhost"));
-        assert!(result.ends_with('\n'), "trailing newline should be preserved");
+        assert!(
+            result.ends_with('\n'),
+            "trailing newline should be preserved"
+        );
     }
 
     #[test]

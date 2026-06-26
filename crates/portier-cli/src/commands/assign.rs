@@ -45,7 +45,11 @@ pub fn run(args: AssignArgs) -> anyhow::Result<()> {
                 .parse()
                 .map_err(|_| anyhow::anyhow!("Invalid range end '{}'", parts[1]))?;
             if start >= end {
-                anyhow::bail!("Invalid range: start ({}) must be less than end ({})", start, end);
+                anyhow::bail!(
+                    "Invalid range: start ({}) must be less than end ({})",
+                    start,
+                    end
+                );
             }
             Some(start..end)
         }
@@ -72,14 +76,19 @@ pub fn run(args: AssignArgs) -> anyhow::Result<()> {
 
     if preferred_ports.is_empty() {
         output::print_warning(format!("No ports configured for project '{}'.", entry.name));
-        output::print_warning("Use 'portier config init' in the project directory to set up ports.");
+        output::print_warning(
+            "Use 'portier config init' in the project directory to set up ports.",
+        );
         return Ok(());
     }
 
     if args.dry_run {
         output::print_success(format!("Dry run for '{}' ({}):", entry.name, entry.stack));
     } else {
-        output::print_success(format!("Assigning ports for '{}' ({}):", entry.name, entry.stack));
+        output::print_success(format!(
+            "Assigning ports for '{}' ({}):",
+            entry.name, entry.stack
+        ));
     }
 
     // Global settings supply the default range + consecutive preference; an
@@ -87,8 +96,11 @@ pub fn run(args: AssignArgs) -> anyhow::Result<()> {
     let settings = libportier::Settings::load();
     let range = range.or_else(|| Some(settings.port_range()));
     let assigner = libportier::Assigner::new(registry.clone());
-    let assignments =
-        assigner.allocate(&preferred_ports, settings.preferences.prefer_consecutive, range)?;
+    let assignments = assigner.allocate(
+        &preferred_ports,
+        settings.preferences.prefer_consecutive,
+        range,
+    )?;
 
     // Print results
     for (service, port) in &assignments {
@@ -101,7 +113,8 @@ pub fn run(args: AssignArgs) -> anyhow::Result<()> {
         let root = std::path::Path::new(worktree);
         let config_files = libportier::config::find_config_files(root, &entry.stack);
         if args.dry_run {
-            let diffs = libportier::rewriter::preview_assignments(&assignments, &config_files, root)?;
+            let diffs =
+                libportier::rewriter::preview_assignments(&assignments, &config_files, root)?;
             if !diffs.is_empty() {
                 output::print_success("Config file changes (dry run):");
                 for (file, file_diffs) in &diffs {
@@ -114,7 +127,8 @@ pub fn run(args: AssignArgs) -> anyhow::Result<()> {
                 }
             }
         } else {
-            let snapshot = libportier::rewriter::apply_assignments(&assignments, &config_files, root)?;
+            let snapshot =
+                libportier::rewriter::apply_assignments(&assignments, &config_files, root)?;
             output::print_success(format!("Snapshot saved: {}", snapshot.id));
         }
     }

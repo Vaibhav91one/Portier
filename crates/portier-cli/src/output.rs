@@ -84,12 +84,7 @@ pub fn print_table(headers: &[&str], rows: &[Vec<String>]) {
 /// Print a human-readable diff line for a changed value.
 pub fn print_diff(label: &str, old_val: &str, new_val: &str) {
     if old_val != new_val {
-        println!(
-            "  {}: {}  {}",
-            label,
-            old_val.red(),
-            new_val.green()
-        );
+        println!("  {}: {}  {}", label, old_val.red(), new_val.green());
     } else {
         println!("  {}: {} (unchanged)", label, old_val);
     }

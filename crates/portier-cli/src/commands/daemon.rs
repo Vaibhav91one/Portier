@@ -40,7 +40,8 @@ fn install_service() -> anyhow::Result<()> {
     #[cfg(target_os = "macos")]
     {
         let bin_path = std::env::current_exe()?;
-        let plist_path = dirs_home().ok_or_else(|| anyhow::anyhow!("HOME not set"))?
+        let plist_path = dirs_home()
+            .ok_or_else(|| anyhow::anyhow!("HOME not set"))?
             .join("Library/LaunchAgents/com.portier.daemon.plist");
 
         if let Some(parent) = plist_path.parent() {
@@ -91,12 +92,16 @@ WantedBy=default.target"#,
         }
 
         std::fs::write(&service_path, &service)?;
-        output::print_success("Installed systemd user service. Run: systemctl --user enable --now portier-daemon");
+        output::print_success(
+            "Installed systemd user service. Run: systemctl --user enable --now portier-daemon",
+        );
     }
 
     #[cfg(not(any(target_os = "macos", target_os = "linux")))]
     {
-        output::print_warning("Auto-install not supported on this OS. Run `portier daemon` manually.");
+        output::print_warning(
+            "Auto-install not supported on this OS. Run `portier daemon` manually.",
+        );
     }
 
     Ok(())
@@ -105,7 +110,8 @@ WantedBy=default.target"#,
 fn uninstall_service() -> anyhow::Result<()> {
     #[cfg(target_os = "macos")]
     {
-        let plist_path = dirs_home().ok_or_else(|| anyhow::anyhow!("HOME not set"))?
+        let plist_path = dirs_home()
+            .ok_or_else(|| anyhow::anyhow!("HOME not set"))?
             .join("Library/LaunchAgents/com.portier.daemon.plist");
         if plist_path.exists() {
             std::fs::remove_file(&plist_path)?;

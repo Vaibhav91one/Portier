@@ -127,10 +127,7 @@ pub fn run(args: StartArgs) -> anyhow::Result<()> {
         if let Some(project) = registry.get_project(&path_key) {
             if let Some(ref wt) = project.worktree {
                 if wt != &path_key {
-                    output::print_warning(format!(
-                        "cwd differs from project worktree '{}'",
-                        wt
-                    ));
+                    output::print_warning(format!("cwd differs from project worktree '{}'", wt));
                 }
             }
         }

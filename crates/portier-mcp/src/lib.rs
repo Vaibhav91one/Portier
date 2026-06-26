@@ -79,10 +79,10 @@ pub fn run_mcp() {
     loop {
         let mut line = String::new();
         match reader.read_line(&mut line) {
-            Ok(0) => break,  // EOF
+            Ok(0) => break, // EOF
             Ok(_) => {}
             Err(e) => {
-                let _ = respond_error(
+                respond_error(
                     &mut stdout.lock(),
                     json!(null),
                     -32700,
@@ -100,7 +100,7 @@ pub fn run_mcp() {
         let req: Value = match serde_json::from_str(&line) {
             Ok(v) => v,
             Err(e) => {
-                let _ = respond_error(
+                respond_error(
                     &mut stdout.lock(),
                     json!(null),
                     -32700,
@@ -298,7 +298,11 @@ fn tool_auto_heal(args: &Value) -> anyhow::Result<ToolOutput> {
             current_conflicts.len()
         ));
         for c in &current_conflicts {
-            lines.push(format!("  Port {} — {}", c.port, c.process_names.join(", ")));
+            lines.push(format!(
+                "  Port {} — {}",
+                c.port,
+                c.process_names.join(", ")
+            ));
         }
     }
 
@@ -346,7 +350,9 @@ fn tool_auto_heal(args: &Value) -> anyhow::Result<ToolOutput> {
     let worktree_path = existing
         .and_then(|p| p.worktree.clone())
         .unwrap_or_else(|| project_path.to_string());
-    if let Some(config) = libportier::config::ProjectConfig::load(std::path::Path::new(&worktree_path))? {
+    if let Some(config) =
+        libportier::config::ProjectConfig::load(std::path::Path::new(&worktree_path))?
+    {
         for (port_name, port_cfg) in &config.ports {
             preferred_ports
                 .entry(port_name.clone())
@@ -450,7 +456,7 @@ fn tool_get_port_map() -> anyhow::Result<ToolOutput> {
     let registry = libportier::registry::Registry::load()?;
     let mut assignments: Vec<PortAssignment> = Vec::new();
 
-    for (_path, entry) in &registry.projects {
+    for entry in registry.projects.values() {
         for (svc_name, svc) in &entry.services {
             assignments.push(PortAssignment {
                 port: svc.assigned,
@@ -475,8 +481,7 @@ fn tool_allocate_port(args: &Value) -> anyhow::Result<ToolOutput> {
     let count = args["count"].as_u64().unwrap_or(1).max(1) as usize;
 
     let statuses = libportier::scanner::scan()?;
-    let mut in_use: std::collections::HashSet<u16> =
-        statuses.iter().map(|s| s.port).collect();
+    let mut in_use: std::collections::HashSet<u16> = statuses.iter().map(|s| s.port).collect();
 
     let mut ports = Vec::with_capacity(count);
     let mut next = preferred;
@@ -560,7 +565,11 @@ fn tool_run_command(args: &Value) -> anyhow::Result<ToolOutput> {
             after_conflicts.len()
         ));
         for c in &after_conflicts {
-            lines.push(format!("  Port {} — {}", c.port, c.process_names.join(", ")));
+            lines.push(format!(
+                "  Port {} — {}",
+                c.port,
+                c.process_names.join(", ")
+            ));
         }
     }
 

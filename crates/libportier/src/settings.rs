@@ -147,8 +147,7 @@ mod tests {
 
     #[test]
     fn test_prefer_consecutive_parsed() {
-        let s: Settings =
-            toml::from_str("[preferences]\nprefer_consecutive = true\n").unwrap();
+        let s: Settings = toml::from_str("[preferences]\nprefer_consecutive = true\n").unwrap();
         assert!(s.preferences.prefer_consecutive);
     }
 }
