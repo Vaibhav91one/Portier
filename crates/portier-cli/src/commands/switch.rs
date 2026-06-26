@@ -57,8 +57,13 @@ pub fn run(args: SwitchArgs) -> anyhow::Result<()> {
         .map(|(k, v)| (k.clone(), v.preferred))
         .collect();
 
+    let settings = libportier::Settings::load();
     let assigner = libportier::assigner::Assigner::new(registry.clone());
-    let assignments = assigner.allocate(&preferred_ports, false, None)?;
+    let assignments = assigner.allocate(
+        &preferred_ports,
+        settings.preferences.prefer_consecutive,
+        Some(settings.port_range()),
+    )?;
 
     // 4. Show assignments
     for (service, port) in &assignments {

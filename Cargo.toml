@@ -20,5 +20,4 @@ colored = "3"
 tempfile = "3"
 chrono = { version = "0.4", features = ["serde"] }
 fs2 = "0.4"
-sysinfo = "0.33"     # For port/process detection cross-platform
-atty = "0.2"
+toml = "0.8"         # Global settings at ~/.config/portier/config.toml

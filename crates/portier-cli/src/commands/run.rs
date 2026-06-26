@@ -93,10 +93,12 @@ pub fn run(args: RunArgs) -> anyhow::Result<()> {
         .or_else(|| project_preferred(&cwd, &args.service))
         .unwrap_or(3000);
 
-    // Scan once (fast — native APIs) and pick a free port.
+    // Scan once (fast — native APIs) and pick a free port within the
+    // configured range.
+    let settings = libportier::Settings::load();
     let statuses = libportier::scanner::scan()?;
     let in_use: HashSet<u16> = statuses.iter().map(|s| s.port).collect();
-    let port = libportier::pick_free_port(preferred, &in_use, None);
+    let port = libportier::pick_free_port(preferred, &in_use, Some(settings.port_range()));
 
     if port != preferred {
         println!("Port {preferred} is busy — using {port} instead.");

@@ -28,6 +28,7 @@ Rust workspace (`cargo`), four crates under `crates/`:
 | `detector` | Single source of truth for "what/where is a project": `PROJECT_MARKERS` table, `detect_stack`, `resolve_project_root`, `detect_project_from_pid`, `find_common_project_root`. |
 | `assigner` | Port allocation. `Assigner::allocate(...)` for multi-service; `pick_free_port(preferred, in_use, range)` for one (pure). |
 | `config` | Per-project `portier.json` + `.env` PORT extraction. |
+| `settings` | Global `~/.config/portier/config.toml` (`Settings::load()`): port range + `prefer_consecutive` + `avoid_well_known`. Optional; defaults to 3000–7000. Consumed by `assign`/`start`/`run`/`switch`. |
 | `inject` | `framework_env_vars(command, port)` — env vars `portier run` injects into a child. |
 | `rewriter/` | Config-file backends (docker, dotenv, nginx, generic) behind the `ConfigBackend` trait. Always snapshots before writing. |
 | `snapshot` | Filesystem snapshots for `portier rollback`. |

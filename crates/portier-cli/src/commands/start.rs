@@ -61,6 +61,7 @@ pub fn run(args: StartArgs) -> anyhow::Result<()> {
 
     // 4. Assign
     let registry = libportier::registry::Registry::load()?;
+    let settings = libportier::Settings::load();
     let assigner = libportier::assigner::Assigner::new(registry.clone());
     let preferred_ports: std::collections::HashMap<String, u16> = config
         .ports
@@ -68,7 +69,11 @@ pub fn run(args: StartArgs) -> anyhow::Result<()> {
         .map(|(k, v)| (k.clone(), v.preferred))
         .collect();
 
-    let assignments = assigner.allocate(&preferred_ports, false, None)?;
+    let assignments = assigner.allocate(
+        &preferred_ports,
+        settings.preferences.prefer_consecutive,
+        Some(settings.port_range()),
+    )?;
 
     // 5. Show results
     for (service, port) in &assignments {

@@ -82,8 +82,13 @@ pub fn run(args: AssignArgs) -> anyhow::Result<()> {
         output::print_success(format!("Assigning ports for '{}' ({}):", entry.name, entry.stack));
     }
 
+    // Global settings supply the default range + consecutive preference; an
+    // explicit --range still wins.
+    let settings = libportier::Settings::load();
+    let range = range.or_else(|| Some(settings.port_range()));
     let assigner = libportier::Assigner::new(registry.clone());
-    let assignments = assigner.allocate(&preferred_ports, false, range)?;
+    let assignments =
+        assigner.allocate(&preferred_ports, settings.preferences.prefer_consecutive, range)?;
 
     // Print results
     for (service, port) in &assignments {

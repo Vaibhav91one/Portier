@@ -3,6 +3,7 @@ pub mod scanner;
 pub mod registry;
 pub mod detector;
 pub mod config;
+pub mod settings;
 pub mod assigner;
 pub mod inject;
 pub mod rewriter;
@@ -17,6 +18,7 @@ pub use detector::{
     ProjectStack,
 };
 pub use config::ProjectConfig;
+pub use settings::Settings;
 pub use assigner::{pick_free_port, Assigner};
 pub use inject::framework_env_vars;
 pub use rewriter::{ConfigBackend, DiffLine, PortDeclaration};
