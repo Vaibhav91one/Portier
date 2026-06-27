@@ -48,7 +48,7 @@ shasum -a 256 portier-*.tar.gz portier-*.zip
 
 ```bash
 cd npm-installer
-npm publish --access public   # @portier/cli
+npm publish --access public   # portier-cli
 ```
 
 The package downloads the matching binary on `postinstall` and exposes it via the
@@ -67,5 +67,5 @@ wingetcreate update Portier.Portier \
 
 ## 6. Verify
 
-- [ ] `brew install …` / `scoop install …` / `npm i -g @portier/cli` each land a
+- [ ] `brew install …` / `scoop install …` / `npm i -g portier-cli` each land a
       working `portier --version`.

@@ -124,7 +124,7 @@ Node.js · Python · Ruby · Rust · Go · Java · Docker
 ```bash
 cargo build              # libportier + CLI
 cargo test --workspace   # all crates
-cargo build --release    # ~2 MB stripped binary
+cargo build --release    # ~1.7 MB stripped binary
 ```
 
 See [`CLAUDE.md`](CLAUDE.md) for architecture and invariants.

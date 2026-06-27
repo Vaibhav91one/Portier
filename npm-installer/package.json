@@ -1,5 +1,5 @@
 {
-  "name": "@portier/cli",
+  "name": "portier-cli",
   "version": "0.1.0",
   "description": "Port conflict detection and resolution CLI tool",
   "bin": {

@@ -18,7 +18,7 @@ const bin = path.join(
 
 if (!fs.existsSync(bin)) {
   console.error(
-    "portier binary not found. Reinstall it with: npm rebuild @portier/cli"
+    "portier binary not found. Reinstall it with: npm rebuild portier-cli"
   );
   process.exit(1);
 }

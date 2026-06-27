@@ -80,7 +80,7 @@ A proxy hides the conflict. Portier fixes the files.
 - **"Editing my config files sounds scary."** Every write is snapshotted; `portier
   rollback` restores. Dry-run shows the diff first.
 - **"Does it work without setup?"** `portier scan` and `portier run` need zero config.
-- **Two-line install:** Homebrew tap / `npm i -g @portier/cli` / cargo install.
+- **Two-line install:** Homebrew tap / `npm i -g portier-cli` / cargo install.
 
 ## Channels (in priority order)
 
