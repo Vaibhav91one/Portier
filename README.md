@@ -7,8 +7,19 @@ port or *proxy* around the clash — Portier **rewrites the actual config files*
 (`docker-compose.yml`, `.env`, `nginx`, `package.json`) so your project's real
 source of truth matches the assigned port, with snapshots for instant rollback.
 
-It ships as a CLI, an MCP server for AI agents (Claude Code / Cursor), and a
-desktop GUI.
+A proxy hides the conflict; Portier fixes the files. It ships as a ~1.7 MB static
+binary (zero runtime deps, macOS/Linux/Windows) — a CLI, an MCP server for AI
+agents (Claude Code / Cursor), and a desktop GUI.
+
+## How Portier compares
+
+| | get-port / portfinder | Portless | **Portier** |
+|---|---|---|---|
+| Approach | find a free port at runtime | proxy to stable `*.localhost` URLs | **rewrite the real config files** |
+| The repo's declared port | unchanged | unchanged (hidden) | **updated to the assigned port** |
+| Survives commit / teammate | no | no | **yes** |
+| Undo | n/a | n/a | **snapshots + `portier rollback`** |
+| Agents | library call | proxy + flag | **MCP server (typed tools) + `init-agent`** |
 
 ---
 

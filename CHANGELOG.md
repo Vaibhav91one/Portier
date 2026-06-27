@@ -1,21 +1,44 @@
 # Changelog
 
-## v0.1.0 (2026-06-26)
+## v0.1.0 (2026-06-27)
 
-Initial release with the following commands:
+First release. Portier detects port conflicts and **rewrites your project's real
+config files** so the assigned port becomes the source of truth — with snapshots
+for instant rollback. Ships as a CLI, an MCP server for AI agents, and a desktop GUI.
 
-- **scan** -- Scan local ports and detect active processes
-- **assign** -- Assign a port to a process or service
-- **link** -- Link a host:port to a service
-- **start** -- Start a portier-managed service
-- **stop** -- Stop a portier-managed service
-- **switch** -- Switch traffic between port assignments
-- **status** -- Show current port assignments and service state
-- **config** -- Manage portier configuration
-- **rollback** -- Roll back to a previous snapshot
+### CLI
 
-Key features:
+- `scan` — list listening ports and highlight conflicts (native OS APIs, ~10 ms)
+- `run -- <cmd>` — allocate a free port, inject `PORT` (and rewrite `next -p` /
+  `vite --port` / Django `runserver` flags), then run the command; auto-registers
+  the project so it's tracked with a sticky port
+- `start` — detect stack, assign free ports, rewrite configs, launch
+- `link`, `status`, `assign`, `config`, `settings`, `stop`, `switch`, `rollback`
+- `daemon` — background auto-healer (launchd/systemd)
+- `init-agent` — write `.mcp.json` / Cursor rules / `CLAUDE.md` into a repo
+- `mcp` — MCP server over stdio
 
-- Config rewriting for docker-compose, .env, nginx, and generic JSON/YAML files
-- Snapshot-based rollback
-- File locking for safe concurrent access
+### Core
+
+- Config rewriting for docker-compose, `.env`, nginx, and generic JSON/YAML, with
+  filesystem snapshots and `rollback`
+- Native-API port scanning via the `listeners` crate (no shelling out to lsof/netstat)
+- Atomic registry transactions (`Registry::update`) — no lost concurrent writes
+- Global settings at `~/.config/portier/config.toml` (port range, prefer-consecutive,
+  avoid-well-known)
+- Projects auto-register when started via `portier run`/`start`
+
+### AI agents
+
+- MCP server built on the official `rmcp` SDK with typed, structured tool outputs:
+  `scan_conflicts`, `allocate_port`, `auto_heal`, `get_port_map`
+
+### Desktop GUI
+
+- Tauri v2 + React app: tracked-project dashboard with live conflict status,
+  per-service port editing, folder picker, dark mode
+
+### Build
+
+- ~1.7 MB stripped static binary, zero runtime dependencies
+- CI builds + tests on macOS, Linux, and Windows; fmt + clippy gates
