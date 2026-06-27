@@ -59,7 +59,7 @@ A proxy hides the conflict. Portier fixes the files.
 > rewriting covers the common formats; exotic ones fall back to a generic JSON/YAML
 > pass. Feedback very welcome, especially on the rewrite-vs-proxy tradeoff.
 >
-> Repo: <github link>
+> Repo: https://github.com/Vaibhav91one/Portier
 
 ## Portier vs the field
 
