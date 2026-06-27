@@ -31,9 +31,14 @@ pub fn home_relative(path: &str) -> String {
     path.to_string()
 }
 
-/// Pretty-print any Serialize value as JSON.
+/// Pretty-print any Serialize value as JSON. Degrades to a stderr error rather
+/// than panicking if serialization somehow fails (effectively never for our own
+/// derived types, but we don't crash the process over output formatting).
 pub fn print_json<T: Serialize>(val: &T) {
-    println!("{}", serde_json::to_string_pretty(val).unwrap());
+    match serde_json::to_string_pretty(val) {
+        Ok(json) => println!("{json}"),
+        Err(e) => print_error(format!("failed to serialize JSON output: {e}")),
+    }
 }
 
 /// Print a simple formatted table.
