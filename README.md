@@ -33,7 +33,7 @@ cargo install --path crates/portier-cli
 brew install portier-cli/tap/portier
 ```
 
-Pre-built binaries: [GitHub Releases](https://github.com/your-username/portier/releases).
+Pre-built binaries: [GitHub Releases](https://github.com/Vaibhav91one/Portier/releases).
 
 ## Quick start
 

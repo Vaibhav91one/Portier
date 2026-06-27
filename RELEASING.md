@@ -61,7 +61,7 @@ Generate and submit manifests at release time (no hand-maintained files needed):
 ```bash
 wingetcreate update Portier.Portier \
   --version 0.1.0 \
-  --urls https://github.com/vaibhavtomar/portier/releases/download/v0.1.0/portier-x86_64-pc-windows-msvc.zip \
+  --urls https://github.com/Vaibhav91one/Portier/releases/download/v0.1.0/portier-x86_64-pc-windows-msvc.zip \
   --submit
 ```
 

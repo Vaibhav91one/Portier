@@ -9,7 +9,7 @@ const zlib = require("zlib");
 const { spawnSync } = require("child_process");
 
 const VERSION = "0.1.0";
-const REPO = "vaibhavtomar/portier";
+const REPO = "Vaibhav91one/Portier";
 
 const PLATFORM_MAP = {
   "darwin-arm64": "aarch64-apple-darwin",
