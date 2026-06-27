@@ -21,3 +21,10 @@ tempfile = "3"
 chrono = { version = "0.4", features = ["serde"] }
 fs2 = "0.4"
 toml = "0.8"         # Global settings at ~/.config/portier/config.toml
+
+# Size-optimized release build (spec §8: ~2 MB stripped binary).
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true

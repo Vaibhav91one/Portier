@@ -7,7 +7,7 @@ edition.workspace = true
 serde.workspace = true
 libportier = { path = "../libportier" }
 rmcp = { version = "1.8.0", features = ["server", "macros", "transport-io"] }
-tokio = { version = "1.52.3", features = ["full"] }
+tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros", "io-std", "io-util", "time", "sync"] }
 
 [lib]
 name = "portier_mcp"
